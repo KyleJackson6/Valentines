@@ -1,11 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# ---------------- Page config ----------------
-st.set_page_config(
-    page_title="Valentine 💖",
-    layout="wide"
-)
+st.set_page_config(page_title="Valentine 💖", layout="wide")
 
 # ---------------- State ----------------
 st.session_state.setdefault("no_clicks", 0)
@@ -26,11 +22,7 @@ if st.session_state.accepted:
 clicks = st.session_state.no_clicks
 
 # ---------------- Growth tuning ----------------
-# YES grows in ALL directions
-scale = min(1.0 + clicks * 0.12, 2.0)   # controlled growth
-overlap = min(clicks * 30, 220)         # covers NO vertically
-
-# Bigger base text
+scale = min(1.0 + clicks * 0.12, 2.2)   # YES grows, capped
 base_font = 26
 font_size = min(base_font + clicks * 2, 44)
 
@@ -38,43 +30,21 @@ font_size = min(base_font + clicks * 2, 44)
 st.markdown(
     f"""
     <style>
-    /* Tight vertical spacing so buttons stay on screen */
     .block-container {{
         padding-top: 1.2rem !important;
         padding-bottom: 1rem !important;
         max-width: 1000px !important;
     }}
 
-    /* YES button — BIG & SQUARE-ISH */
-    #yes_btn {{
-        width: 100% !important;
-        min-height: 110px !important;        /* THIS is the key */
-        font-size: {font_size}px !important;
-        background-color: #ff4b6e !important;
-        color: white !important;
-        border-radius: 26px !important;
-        border: none !important;
-        font-weight: 800 !important;
-
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-
-        position: relative !important;
-        z-index: 9999 !important;
-
-        transform: scale({scale}) !important;
-        transform-origin: top center !important;
-
-        /* Pull YES down to eat NO */
-        margin-bottom: -{overlap}px !important;
-
-        transition: transform 0.15s ease-in-out,
-                    margin-bottom 0.15s ease-in-out,
-                    font-size 0.15s ease-in-out;
+    /* We create a "stage" that doesn't reflow */
+    #stage {{
+        position: relative;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
     }}
 
-    /* NO button — also tall but never grows */
+    /* NO stays in normal layout and never moves */
     #no_btn {{
         width: 100% !important;
         min-height: 90px !important;
@@ -85,27 +55,65 @@ st.markdown(
         align-items: center !important;
         justify-content: center !important;
     }}
+
+    /* YES becomes an overlay that does NOT affect layout */
+    #yes_btn {{
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+
+        width: 100% !important;
+        min-height: 110px !important;
+        font-size: {font_size}px !important;
+
+        background-color: #ff4b6e !important;
+        color: white !important;
+        border-radius: 26px !important;
+        border: none !important;
+        font-weight: 800 !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        transform: scale({scale}) !important;
+        transform-origin: top center !important;
+
+        z-index: 9999 !important;
+        transition: transform 0.15s ease-in-out, font-size 0.15s ease-in-out;
+    }}
+
+    /* Adds space so NO appears below YES, but NO stays fixed */
+    #spacer {{
+        height: 125px;
+    }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ---------------- UI ----------------
-st.markdown(
-    "<h1 style='text-align:center;'>Would you be my Valentine? 💘</h1>",
-    unsafe_allow_html=True
-)
+st.markdown("<h1 style='text-align:center;'>Would you be my Valentine? 💘</h1>", unsafe_allow_html=True)
 
-# Stacked on purpose (perfect for mobile)
+# Stage container (for overlay positioning)
+st.markdown("<div id='stage'>", unsafe_allow_html=True)
+
+# YES button (will be overlayed via CSS)
 if st.button("YES 💖", key="yes_btn_key", use_container_width=True):
     st.session_state.accepted = True
     st.rerun()
 
+# Spacer keeps NO below the YES area, but YES doesn't push it around
+st.markdown("<div id='spacer'></div>", unsafe_allow_html=True)
+
+# NO button (stays still)
 if st.button("NO 🙄", key="no_btn_key", use_container_width=True):
     st.session_state.no_clicks += 1
     st.rerun()
 
-# ---------------- JS: assign DOM IDs ----------------
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ---------------- JS: assign DOM IDs reliably ----------------
 components.html(
     """
     <script>
