@@ -21,93 +21,72 @@ if st.session_state.accepted:
 
 clicks = st.session_state.no_clicks
 
-# ----- Gentle growth tuning (down + right) -----
-font_size = 22 + clicks * 4
-pad_y = 14 + clicks * 2
-pad_x = 24 + clicks * 5
+# ----- Growth tuning (all directions) -----
+# scale grows a little each NO press; cap it so it doesn't force scrolling forever
+scale = min(1.0 + clicks * 0.12, 2.2)
 
-# More DOWN growth (but not insane)
-base_height = 46
-extra_height = clicks * 12
-min_height = base_height + extra_height
+# overlap grows so YES starts covering the NO button below it
+overlap = min(clicks * 18, 140)  # px pulled into the NO area; capped
 
-# RIGHT overlap (gentle)
-COVER_START = 1
-cover_mode = clicks >= COVER_START
-overlap_px = max(0, (clicks - COVER_START + 1) * 55)  # tweak 55->70 if you want faster cover
+# small baseline button sizes so they fit on phones
+base_font = 20
+font_size = min(base_font + clicks * 2, 34)
 
-cover_css = ""
-if cover_mode:
-    cover_css = f"""
-    #yes_btn {{
-        position: relative !important;
-        z-index: 9999 !important;
-        width: calc(100% + {overlap_px}px) !important;
-        margin-right: -{overlap_px}px !important;
-    }}
-    """
-
-# ----- CSS (includes MOBILE: keep columns side-by-side) -----
 st.markdown(
     f"""
     <style>
-    /* Force Streamlit columns to stay side-by-side on mobile */
-    div[data-testid="stHorizontalBlock"] {{
-        flex-wrap: nowrap !important;
-        gap: 0.75rem !important;
-        align-items: stretch !important;
-    }}
-    div[data-testid="column"] {{
-        flex: 1 1 0 !important;
-        width: 0 !important;       /* makes them truly split the row */
-        min-width: 0 !important;
+    /* Reduce top padding so everything fits on mobile without scroll */
+    .block-container {{
+        padding-top: 1.25rem !important;
+        padding-bottom: 1rem !important;
     }}
 
-    /* YES button */
+    /* YES button: scales in ALL directions */
     #yes_btn {{
+        width: 100% !important;
         font-size: {font_size}px !important;
-        padding: {pad_y}px {pad_x}px !important;
-        min-height: {min_height}px !important;   /* grows DOWN */
+        padding: 14px 18px !important;
         background-color: #ff4b6e !important;
         color: white !important;
         border-radius: 18px !important;
         border: none !important;
         font-weight: 800 !important;
-        transition: all 0.12s ease-in-out !important;
-        width: 100% !important;
-        white-space: nowrap !important;
+
+        position: relative !important;
+        z-index: 9999 !important;
+
+        transform: scale({scale}) !important;
+        transform-origin: top center !important;
+
+        /* Pull YES downward to cover the NO button beneath it */
+        margin-bottom: -{overlap}px !important;
+
+        transition: transform 0.12s ease-in-out, margin-bottom 0.12s ease-in-out, font-size 0.12s ease-in-out;
     }}
 
     /* NO button stays normal */
     #no_btn {{
+        width: 100% !important;
         font-size: 18px !important;
         padding: 14px 18px !important;
         border-radius: 14px !important;
     }}
-
-    {cover_css}
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ----- UI -----
-st.markdown(
-    "<h1 style='text-align:center;'>Would you be my Valentine? 💘</h1>",
-    unsafe_allow_html=True
-)
+st.markdown("<h1 style='text-align:center;'>Would you be my Valentine? 💘</h1>", unsafe_allow_html=True)
 
-col_yes, col_no = st.columns(2)
+# stacked on purpose (works great on phone)
+if st.button("YES 💖", key="yes_btn_key", use_container_width=True):
+    st.session_state.accepted = True
+    st.rerun()
 
-with col_yes:
-    if st.button("YES 💖", key="yes_btn_key", use_container_width=True):
-        st.session_state.accepted = True
-        st.rerun()
-
-with col_no:
-    if st.button("NO 🙄", key="no_btn_key", use_container_width=True):
-        st.session_state.no_clicks += 1
-        st.rerun()
+if st.button("NO 🙄", key="no_btn_key", use_container_width=True):
+    st.session_state.no_clicks += 1
+    st.rerun()
 
 # ----- JS: assign DOM IDs reliably -----
 components.html(
