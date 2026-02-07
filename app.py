@@ -13,7 +13,7 @@ if st.session_state.accepted:
     st.markdown(
         """
         <h1 style="text-align:center; color:#ff4b6e;">YAYYYYY 💖💖💖</h1>
-        <h2 style="text-align:center;">TANKS POOKIE</h2>
+        <h2 style="text-align:center;">Best decision ever 😌✨</h2>
         """,
         unsafe_allow_html=True
     )
@@ -21,20 +21,20 @@ if st.session_state.accepted:
 
 clicks = st.session_state.no_clicks
 
-# ----- Gentle growth tuning -----
-font_size = 22 + clicks * 4          # small increases
-pad_y = 14 + clicks * 1              # tiny vertical padding change
-pad_x = 24 + clicks * 5              # small horizontal padding change
+# ----- Gentle growth tuning (down + right) -----
+font_size = 22 + clicks * 4
+pad_y = 14 + clicks * 2
+pad_x = 24 + clicks * 5
 
-# Expand DOWN using height (gentle)
-base_height = 46                     # approx normal button height
-extra_height = clicks * 30           # gentle downward growth
+# More DOWN growth (but not insane)
+base_height = 46
+extra_height = clicks * 12
 min_height = base_height + extra_height
 
-# Expand RIGHT using overlap (gentle)
+# RIGHT overlap (gentle)
 COVER_START = 1
 cover_mode = clicks >= COVER_START
-overlap_px = max(0, (clicks - COVER_START + 1) * 50)  # small overlap per click
+overlap_px = max(0, (clicks - COVER_START + 1) * 55)  # tweak 55->70 if you want faster cover
 
 cover_css = ""
 if cover_mode:
@@ -47,13 +47,27 @@ if cover_mode:
     }}
     """
 
+# ----- CSS (includes MOBILE: keep columns side-by-side) -----
 st.markdown(
     f"""
     <style>
+    /* Force Streamlit columns to stay side-by-side on mobile */
+    div[data-testid="stHorizontalBlock"] {{
+        flex-wrap: nowrap !important;
+        gap: 0.75rem !important;
+        align-items: stretch !important;
+    }}
+    div[data-testid="column"] {{
+        flex: 1 1 0 !important;
+        width: 0 !important;       /* makes them truly split the row */
+        min-width: 0 !important;
+    }}
+
+    /* YES button */
     #yes_btn {{
         font-size: {font_size}px !important;
         padding: {pad_y}px {pad_x}px !important;
-        min-height: {min_height}px !important;   /* grows DOWN gently */
+        min-height: {min_height}px !important;   /* grows DOWN */
         background-color: #ff4b6e !important;
         color: white !important;
         border-radius: 18px !important;
@@ -64,6 +78,7 @@ st.markdown(
         white-space: nowrap !important;
     }}
 
+    /* NO button stays normal */
     #no_btn {{
         font-size: 18px !important;
         padding: 14px 18px !important;
@@ -76,6 +91,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# ----- UI -----
 st.markdown(
     "<h1 style='text-align:center;'>Would you be my Valentine? 💘</h1>",
     unsafe_allow_html=True
@@ -93,7 +109,6 @@ with col_no:
         st.session_state.no_clicks += 1
         st.rerun()
 
-
 # ----- JS: assign DOM IDs reliably -----
 components.html(
     """
@@ -110,3 +125,5 @@ components.html(
     height=0,
     width=0,
 )
+
+
