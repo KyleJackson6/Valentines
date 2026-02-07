@@ -13,7 +13,7 @@ if st.session_state.accepted:
     st.markdown(
         """
         <h1 style="text-align:center; color:#ff4b6e;">YAYYYYY 💖💖💖</h1>
-        <h2 style="text-align:center;">Best decision ever 😌✨</h2>
+        <h2 style="text-align:center;">TANKSS POOKIE</h2>
         """,
         unsafe_allow_html=True
     )
@@ -129,3 +129,4 @@ components.html(
     height=0,
     width=0,
 )
+
