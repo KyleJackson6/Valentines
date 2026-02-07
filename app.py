@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 # ---------------- Page config ----------------
 st.set_page_config(
     page_title="Valentine 💖",
-    layout="wide"   # makes buttons longer on all screens
+    layout="wide"
 )
 
 # ---------------- State ----------------
@@ -26,34 +26,39 @@ if st.session_state.accepted:
 clicks = st.session_state.no_clicks
 
 # ---------------- Growth tuning ----------------
-# YES grows smoothly in all directions
-scale = min(1.0 + clicks * 0.12, 2.2)     # scale growth (capped)
-overlap = min(clicks * 22, 160)           # covers NO vertically (capped)
+# YES grows in ALL directions
+scale = min(1.0 + clicks * 0.12, 2.0)   # controlled growth
+overlap = min(clicks * 30, 220)         # covers NO vertically
 
-base_font = 24
-font_size = min(base_font + clicks * 2, 40)
+# Bigger base text
+base_font = 26
+font_size = min(base_font + clicks * 2, 44)
 
 # ---------------- CSS ----------------
 st.markdown(
     f"""
     <style>
-    /* Reduce vertical padding so no scrolling on phones */
+    /* Tight vertical spacing so buttons stay on screen */
     .block-container {{
-        padding-top: 1.5rem !important;
+        padding-top: 1.2rem !important;
         padding-bottom: 1rem !important;
-        max-width: 1100px !important;
+        max-width: 1000px !important;
     }}
 
-    /* YES button */
+    /* YES button — BIG & SQUARE-ISH */
     #yes_btn {{
         width: 100% !important;
+        min-height: 110px !important;        /* THIS is the key */
         font-size: {font_size}px !important;
-        padding: 22px 28px !important;
         background-color: #ff4b6e !important;
         color: white !important;
-        border-radius: 22px !important;
+        border-radius: 26px !important;
         border: none !important;
         font-weight: 800 !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
 
         position: relative !important;
         z-index: 9999 !important;
@@ -61,7 +66,7 @@ st.markdown(
         transform: scale({scale}) !important;
         transform-origin: top center !important;
 
-        /* Pull YES down to cover NO */
+        /* Pull YES down to eat NO */
         margin-bottom: -{overlap}px !important;
 
         transition: transform 0.15s ease-in-out,
@@ -69,12 +74,16 @@ st.markdown(
                     font-size 0.15s ease-in-out;
     }}
 
-    /* NO button (never grows) */
+    /* NO button — also tall but never grows */
     #no_btn {{
         width: 100% !important;
-        font-size: 20px !important;
-        padding: 20px 28px !important;
-        border-radius: 20px !important;
+        min-height: 90px !important;
+        font-size: 22px !important;
+        border-radius: 24px !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }}
     </style>
     """,
@@ -87,7 +96,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Buttons are stacked ON PURPOSE (perfect for mobile)
+# Stacked on purpose (perfect for mobile)
 if st.button("YES 💖", key="yes_btn_key", use_container_width=True):
     st.session_state.accepted = True
     st.rerun()
@@ -96,7 +105,7 @@ if st.button("NO 🙄", key="no_btn_key", use_container_width=True):
     st.session_state.no_clicks += 1
     st.rerun()
 
-# ---------------- JS: assign DOM IDs reliably ----------------
+# ---------------- JS: assign DOM IDs ----------------
 components.html(
     """
     <script>
